@@ -1,0 +1,6 @@
+@OnlilneStore.API_HostAddress = http://localhost:5133
+
+GET {{OnlilneStore.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
