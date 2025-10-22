@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Shared;
+using Shared.OrderModels;
+
+namespace Services.Abstraction
+{
+    public interface IAuthService
+    {
+        Task<UserResultDto> LoginAsync(LoginDto loginDto);
+        Task<UserResultDto> RegisterAsync(RegisterDto registerDto);
+        Task<bool> CheckEmailExistAsync(string email);
+        Task<UserResultDto> GetCurrentUserAsync(string email);
+        Task<AddressDto> GetCurrentUserAddressAsync(string email);
+        Task<AddressDto> UpdateCurrentUserAddressAsync(AddressDto address,string email);
+    }
+}

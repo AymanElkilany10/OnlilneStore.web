@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Exceptions
 {
-    public class BasketNotFoundException(string id) : NotFiniteNumberException($"Basket with id {id} not found")
+    public class BasketNotFoundException(string id) : NotFoundException($"Basket with id {id} not found")
     {
     }
 }

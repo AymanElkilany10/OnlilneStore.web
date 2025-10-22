@@ -1,8 +1,16 @@
-﻿using Domain.Contracts;
+﻿using System.Text;
+using Domain.Contracts;
+using Domain.Models.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using OnlineStore.API.Middlewares;
 using Persistence;
+using Persistence.Data.Identity;
 using Services;
+using Shared;
 using Shared.ErrorModels;
 
 namespace OnlineStore.API.Extenstions
@@ -14,13 +22,14 @@ namespace OnlineStore.API.Extenstions
             services.AddBuiltInServices();
             services.AddSwaggerServices();
             services.ConfigureServices();
-
+            services.AddIdentityServices();
 
             services.AddInfrastructureServices(configuration);
-            services.AddApplicationServices();
+            services.AddApplicationServices(configuration);
+            services.ConfigureJwtServices(configuration);
 
 
-           
+
             return services;
         }
 
@@ -29,11 +38,40 @@ namespace OnlineStore.API.Extenstions
             services.AddControllers();
             return services;
         }
+        private static IServiceCollection ConfigureJwtServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            var JwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>();
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+
+                    ValidIssuer = JwtOptions.Issuer,
+                    ValidAudience = JwtOptions.audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtOptions.SecretKey)),
+                };
+            });
+            return services;
+        }
         
         private static IServiceCollection AddSwaggerServices(this IServiceCollection services)
         {
             services.AddSwaggerGen(); 
             services.AddEndpointsApiExplorer();
+            return services;
+        }
+        private static IServiceCollection AddIdentityServices(this IServiceCollection services)
+        {
+            services.AddIdentity<AppUser, IdentityRole>()
+                .AddEntityFrameworkStores<StoreIdentityDbContext>();
             return services;
         }
         
@@ -76,6 +114,7 @@ namespace OnlineStore.API.Extenstions
             app.UseStaticFiles();
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
